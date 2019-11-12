@@ -4,7 +4,7 @@
 window.LifeSim = function(canvasId, options) {
   options = options || {};
 
-  var SS = 800;
+  var SS = 512;
 
   options.initVFn = options.initVFn || [
     '0.0',
@@ -193,7 +193,7 @@ window.LifeSim = function(canvasId, options) {
   var makeTextures = function(names) {
     var ret = {};
     names.forEach(function(name) {
-      ret[name] = new gl.Texture(WIDTH, HEIGHT, {type: gl.FLOAT});
+      ret[name] = new gl.Texture(WIDTH, HEIGHT, {type: gl.UNSIGNED_BYTE});
     });
 
     ret.swap = function(a, b) {
