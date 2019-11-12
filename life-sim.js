@@ -6,8 +6,8 @@ window.LifeSim = function(canvasId, options) {
 
   var dpi = window.devicePixelRatio || 1;
 
-  var SW = window.innerWidth;
-  var SH = window.innerHeight;
+  var SW = document.documentElement.clientWidth || window.innerWidth;
+  var SH = document.documentElement.clientHeight || window.innerHeight;
 
   options.initVFn = options.initVFn || [
     '0.0',
