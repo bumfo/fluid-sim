@@ -662,7 +662,7 @@ window.FluidSim = function(canvasId, options) {
         textures.swap('velocity0', 'velocity1');
       } 
       
-      if ((ev.buttons & 2) !== 0) {
+      if ((ev.buttons & 1) !== 0) {
         textures.color1.drawTo(function() {
           addSplat(
             textures.color0,
