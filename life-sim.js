@@ -4,7 +4,10 @@
 window.LifeSim = function(canvasId, options) {
   options = options || {};
 
-  var SS = 512;
+  var dpi = window.devicePixelRatio || 1;
+
+  var SW = window.innerWidth;
+  var SH = window.innerHeight;
 
   options.initVFn = options.initVFn || [
     '0.0',
@@ -21,16 +24,20 @@ window.LifeSim = function(canvasId, options) {
     options.threshold = false;
   }
 
-  var WIDTH = options.size || SS;
-  var HEIGHT = WIDTH;
+  var WIDTH = options.size || SW;
+  var HEIGHT = options.size || SH;
 
   var canvas = document.getElementById(canvasId);
-  canvas.style.margin = "0 auto";
+  document.body.style.width = WIDTH + 'px';
+  document.body.style.height = HEIGHT + 'px';
+  canvas.style.margin = "0 0";
   canvas.style.display = "block";
+  canvas.style.transformOrigin = '0 0';
+  canvas.style.transform = 'scale('+(1./dpi)+','+(1./dpi)+')';
 
-  var gl = GL.create(canvas);
-  gl.canvas.width = WIDTH;
-  gl.canvas.height = HEIGHT;
+  var gl = GL.create(canvas, {antialias: false});
+  gl.canvas.width = WIDTH*dpi;
+  gl.canvas.height = HEIGHT*dpi;
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
   // Standard 2-triangle mesh covering the viewport
@@ -132,15 +139,15 @@ window.LifeSim = function(canvasId, options) {
       varying vec2 textureCoord;
 
       void main() {
-        vec4 c1 = texture2D(inputTexture, (textureCoord - vec2(-1. / `+SS+`., -1. / `+SS+`.)));
-        vec4 c2 = texture2D(inputTexture, (textureCoord - vec2(-1. / `+SS+`., 0)));
-        vec4 c3 = texture2D(inputTexture, (textureCoord - vec2(-1. / `+SS+`., +1. / `+SS+`.)));
-        vec4 c4 = texture2D(inputTexture, (textureCoord - vec2(0, -1. / `+SS+`.)));
+        vec4 c1 = texture2D(inputTexture, (textureCoord - vec2(-1. / `+SW+`., -1. / `+SH+`.)));
+        vec4 c2 = texture2D(inputTexture, (textureCoord - vec2(-1. / `+SW+`., 0)));
+        vec4 c3 = texture2D(inputTexture, (textureCoord - vec2(-1. / `+SW+`., +1. / `+SH+`.)));
+        vec4 c4 = texture2D(inputTexture, (textureCoord - vec2(0, -1. / `+SH+`.)));
         vec4 c5 = texture2D(inputTexture, (textureCoord - vec2(0, 0)));
-        vec4 c6 = texture2D(inputTexture, (textureCoord - vec2(0, +1. / `+SS+`.)));
-        vec4 c7 = texture2D(inputTexture, (textureCoord - vec2(+1. / `+SS+`., -1. / `+SS+`.)));
-        vec4 c8 = texture2D(inputTexture, (textureCoord - vec2(+1. / `+SS+`., 0)));
-        vec4 c9 = texture2D(inputTexture, (textureCoord - vec2(+1. / `+SS+`., +1. / `+SS+`.)));
+        vec4 c6 = texture2D(inputTexture, (textureCoord - vec2(0, +1. / `+SH+`.)));
+        vec4 c7 = texture2D(inputTexture, (textureCoord - vec2(+1. / `+SW+`., -1. / `+SH+`.)));
+        vec4 c8 = texture2D(inputTexture, (textureCoord - vec2(+1. / `+SW+`., 0)));
+        vec4 c9 = texture2D(inputTexture, (textureCoord - vec2(+1. / `+SW+`., +1. / `+SH+`.)));
 
         vec4 sum = c1 + c2 + c3 + c4 + c6 + c7 + c8 + c9;
 
@@ -162,21 +169,21 @@ window.LifeSim = function(canvasId, options) {
   // Apply a "splat" of change to a given place with a given
   // blob radius. The effect of the splat has an exponential falloff.
   var addSplat = (function() {
-    var shader = new gl.Shader(standardVertexShaderSrc, '\
-      uniform vec4 change; \
-      uniform vec2 center; \
-      uniform float radius; \
-      uniform sampler2D inputTex; \
-      \
-      varying vec2 textureCoord; \
-      \
-      void main() { \
-        float dx = center.x - textureCoord.x; \
-        float dy = center.y - textureCoord.y; \
-        vec4 cur = texture2D(inputTex, textureCoord); \
-        gl_FragColor = cur + change * exp(-(dx * dx + dy * dy) / radius); \
-      } \
-    ');
+    var shader = new gl.Shader(standardVertexShaderSrc, `
+      uniform vec4 change;
+      uniform vec2 center;
+      uniform float radius;
+      uniform sampler2D inputTex;
+     
+      varying vec2 textureCoord;
+     
+      void main() {
+        float dx = (center.x - textureCoord.x) * `+SW+`.;
+        float dy = (center.y - textureCoord.y) * `+SH+`.;
+        vec4 cur = texture2D(inputTex, textureCoord);
+        gl_FragColor = cur + change * exp(-(dx * dx + dy * dy) / radius);
+      }
+    `);
 
     return function(inputTexture, change, center, radius) {
       inputTexture.bind(0);
@@ -193,7 +200,7 @@ window.LifeSim = function(canvasId, options) {
   var makeTextures = function(names) {
     var ret = {};
     names.forEach(function(name) {
-      ret[name] = new gl.Texture(WIDTH, HEIGHT, {type: gl.UNSIGNED_BYTE});
+      ret[name] = new gl.Texture(WIDTH, HEIGHT, {type: gl.UNSIGNED_BYTE, magFilter: gl.NEAREST});
     });
 
     ret.swap = function(a, b) {
@@ -247,7 +254,7 @@ window.LifeSim = function(canvasId, options) {
             textures.color0,
             [10, 0, 0, 0.0],
             [ev.offsetX / WIDTH, 1.0 - ev.offsetY / HEIGHT],
-            0.0004
+            4
           );
         });
         textures.swap('color0', 'color1');
