@@ -212,6 +212,34 @@ window.LifeSim = function(canvasId, options) {
     };
   })();
 
+  var addPixel = (function() {
+    var shader = new gl.Shader(standardVertexShaderSrc, `
+      uniform vec4 change;
+      uniform vec2 center;
+      uniform sampler2D inputTex;
+     
+      varying vec2 textureCoord;
+     
+      void main() {
+        float dx = (center.x - textureCoord.x) * `+SW+`.;
+        float dy = (center.y - textureCoord.y) * `+SH+`.;
+        vec4 cur = texture2D(inputTex, textureCoord);
+        gl_FragColor = cur + change * (1. - step(.5, abs(dx))) * (1. - step(.5, abs(dy)));
+      }
+    `);
+
+    return function(inputTexture, change, center) {
+      inputTexture.bind(0);
+      shader.uniforms({
+        change: change,
+        center: center,
+        inputTex: 0
+      });
+      shader.draw(standardMesh, gl.TRIANGLE_STRIP);
+    };
+  })();
+
+
   // Apply a "splat" of change to a given place with a given
   // blob radius. The effect of the splat has an exponential falloff.
   var addNoisySplat = (function() {
@@ -268,6 +296,11 @@ window.LifeSim = function(canvasId, options) {
                                            options.initCFn[1],
                                            options.initCFn[2]);
 
+  var clearPainter = makeFunctionPainter('0.0',
+                                         '0.0',
+                                         '0.0');
+
+
   var reset = function() {
     textures.color0.drawTo(initCFnPainter);
   };
@@ -287,7 +320,47 @@ window.LifeSim = function(canvasId, options) {
     }
   };
 
+  var dragging = null;
+  var paused = false;
+
   gl.onupdate = function() {
+    if (paused) return;
+
+    if (dragging) {
+      var ev = dragging;
+      var lv = vel;
+      var d = Math.hypot(ev.offsetX - lx, ev.offsetY - ly);
+      vel = 0.9 * vel + 0.1 * d;
+      gb = 0.5 * (1. + Math.sign(gb - 0.5));
+
+      var qq = Math.min(20, Math.floor(Math.sqrt(d)));
+
+      for (var i = 1; i < qq; ++i) {
+        textures.color1.drawTo(function() {
+          addNoisySplat(
+            textures.color0,
+            [gb, 1. - gb, 1. - gb, 0.0],
+            [(lx + i / qq  * (ev.offsetX - lx)) / underW, 1.0 - (ly + i / qq *  (ev.offsetY - ly)) / underH],
+            100 * (lv + i / qq * (vel - lv))
+          );
+        });
+        textures.swap('color0', 'color1');
+      }
+
+      textures.color1.drawTo(function() {
+        addNoisySplat(
+          textures.color0,
+          [gb, 1. - gb, 1. - gb, 0.0],
+          [ev.offsetX / underW, 1.0 - ev.offsetY / underH],
+          100 * vel
+        );
+      });
+      textures.swap('color0', 'color1');
+
+      lx = ev.offsetX;
+      ly = ev.offsetY;
+    }
+
     textures.color1.drawTo(function() {
       gameOfLife(textures.color0);
     });
@@ -315,29 +388,70 @@ window.LifeSim = function(canvasId, options) {
   gl.onmousedown = function(ev) {
     lx = ev.offsetX;
     ly = ev.offsetY;
+    vel = 1;
     gb = 0.5 * (1. + Math.sign(Math.random() - 0.5) * Math.random());
-  };
 
-  gl.onmousemove = function(ev) {
-    vel = Math.hypot(ev.offsetX - lx, ev.offsetY - ly);
-    lx = ev.offsetX;
-    ly = ev.offsetY;
-    if (ev.dragging) {
+    if (paused) {
       if ((ev.buttons & 1) !== 0) {
         textures.color1.drawTo(function() {
-          gb = 0.5 * (1. + Math.sign(gb - 0.5));
-
-          addNoisySplat(
+          addPixel(
             textures.color0,
-            [gb, 1. - gb, 1. - gb, 0.0],
-            [ev.offsetX / underW, 1.0 - ev.offsetY / underH],
-            100 * vel
+            [1, 0, 0, 0],
+            [ev.offsetX / underW, 1.0 - ev.offsetY / underH]
+          );
+        });
+        textures.swap('color0', 'color1');
+      } else if ((ev.buttons & 2) !== 0) {
+        textures.color1.drawTo(function() {
+          addPixel(
+            textures.color0,
+            [-1, 0, 0, 0],
+            [ev.offsetX / underW, 1.0 - ev.offsetY / underH]
           );
         });
         textures.swap('color0', 'color1');
       }
     }
   };
+
+  gl.onmousemove = function(ev) {
+    if (ev.dragging) {
+      if ((ev.buttons & 1) !== 0) {
+        dragging = ev;
+
+        // if (paused) {
+        //   textures.color1.drawTo(function() {
+        //     addPixel(
+        //       textures.color0,
+        //       [1, 0, 0, 0],
+        //       [ev.offsetX / underW, 1.0 - ev.offsetY / underH]
+        //     );
+        //   });
+        //   textures.swap('color0', 'color1');
+        // }
+      }
+    }
+  }; 
+
+  document.addEventListener('keydown', function(ev) {
+    if (ev.keyCode === 32) {
+      if (paused) {
+        paused = false;
+        gl.onupdate();
+        paused = true;
+      }
+      paused = true;
+    } else if (ev.keyCode === 8) {
+      ev.preventDefault();
+      textures.color0.drawTo(clearPainter);
+    } else if (ev.keyCode === 9) {
+      paused = !paused;
+    }
+  });
+
+  gl.onmouseup = function(ev) {
+    dragging = null;
+  }
 
   gl.canvas.addEventListener('contextmenu', function(ev) {
     ev.preventDefault();
