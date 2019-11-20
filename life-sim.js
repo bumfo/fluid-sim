@@ -27,6 +27,9 @@ window.LifeSim = function(canvasId, options) {
   var WIDTH = options.size || SW;
   var HEIGHT = options.size || SH;
 
+  var underW = WIDTH * dpi;
+  var underH = HEIGHT * dpi;
+
   var canvas = document.getElementById(canvasId);
   document.body.style.width = WIDTH + 'px';
   document.body.style.height = HEIGHT + 'px';
@@ -36,8 +39,8 @@ window.LifeSim = function(canvasId, options) {
   canvas.style.transform = 'scale('+(1./dpi)+','+(1./dpi)+')';
 
   var gl = GL.create(canvas, {antialias: false});
-  gl.canvas.width = WIDTH*dpi;
-  gl.canvas.height = HEIGHT*dpi;
+  gl.canvas.width = underW;
+  gl.canvas.height = underH;
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
   // Standard 2-triangle mesh covering the viewport
@@ -253,7 +256,7 @@ window.LifeSim = function(canvasId, options) {
           addSplat(
             textures.color0,
             [10, 0, 0, 0.0],
-            [ev.offsetX / WIDTH, 1.0 - ev.offsetY / HEIGHT],
+            [ev.offsetX / underW, 1.0 - ev.offsetY / underH],
             4
           );
         });
