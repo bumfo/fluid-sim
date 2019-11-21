@@ -51,7 +51,7 @@ window.LifeSim = function(canvasId, options) {
 
   var zoom = getParameterByName('z');
   if (zoom) {
-    myScale = zoom;
+    myScale = 1. * zoom;
   }
 
 
@@ -580,32 +580,35 @@ window.LifeSim = function(canvasId, options) {
     ev.preventDefault();
   });
 
-  // paused = true;
-  clear();
-
-  var J0 = 55;
-  var J1 = 55;
-
-  var adj = 1;
-
-  var number = getParameterByName('n');
-  if (number) {
-    J0 = number;
-    J1 = number;
-    adj = 1;
-  }
 
   var sss = getParameterByName('s');
   if (sss) {
-    speed = sss;
+    speed = 1. * sss;
   }
 
-  for (var j = J0 ; j <= J1; j += 2) {
-    fillI(j, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, 1);
-    fill_(j, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, 1);
+  if (!getParameterByName('q')) {
+    // paused = true;
+    clear();
 
-    fillI(3, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, -1);
-    fill_(3, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, -1);
+    var J0 = 55;
+    var J1 = 55;
+
+    var adj = 1;
+
+    var number = getParameterByName('n');
+    if (number) {
+      J0 = number;
+      J1 = number;
+      adj = 1;
+    }
+
+    for (var j = J0 ; j <= J1; j += 2) {
+      fillI(j, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, 1);
+      fill_(j, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, 1);
+
+      fillI(3, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, -1);
+      fill_(3, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, -1);
+    }
   }
 
   gl.animate();
