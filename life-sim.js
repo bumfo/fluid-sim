@@ -43,7 +43,8 @@ window.LifeSim = function(canvasId, options) {
 
   var myScale = 1;
 
-  var speed = 1;
+  // var speed = 1;
+  var speed = 15 / 60;
 
   var gl = GL.create(canvas, {antialias: false});
   gl.canvas.width = underW;
@@ -383,13 +384,23 @@ window.LifeSim = function(canvasId, options) {
     textures.swap('color0', 'color1');
   };
 
+  var count = 0;
+
   gl.onupdate = function() {
     if (paused) return;
 
-    for (var i = 1; i < speed; ++i) {
+    if (speed >= 1) {
+      for (var i = 1; i < speed; ++i) {
+        myUpdate();
+      }
       myUpdate();
+    } else {
+      if (count % ((1 / speed) | 0) === 0) {
+        myUpdate();
+      }
     }
-    myUpdate();
+
+    ++count;
   }
 
   gl.ontouchmove = function(ev) {
@@ -539,7 +550,9 @@ window.LifeSim = function(canvasId, options) {
       // alert(ev.key);
     } else if (ev.key === 's') {
       speed /= 2;
-      if (speed < 1) speed = 1;
+      if (speed < 1 / 4) speed = 1 / 4;
+    } else if (ev.key === 'd') {
+      speed = 1;
     }
   });
 
@@ -551,7 +564,7 @@ window.LifeSim = function(canvasId, options) {
     ev.preventDefault();
   });
 
-  // paused = true
+  // paused = true;
   clear();
 
   var J0 = 55;
@@ -569,6 +582,11 @@ window.LifeSim = function(canvasId, options) {
     J0 = number;
     J1 = number;
     adj = 1;
+  }
+
+  var sss = getParameterByName('s');
+  if (sss) {
+    speed = sss;
   }
 
   for (var j = J0 ; j <= J1; j += 2) {
