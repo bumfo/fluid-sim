@@ -554,8 +554,8 @@ window.LifeSim = function(canvasId, options) {
   // paused = true
   clear();
 
-  var J0 = 125;
-  var J1 = 125;
+  var J0 = 55;
+  var J1 = 55;
 
   var adj = 1;
 
