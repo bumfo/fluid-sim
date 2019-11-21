@@ -16,6 +16,12 @@ window.LifeSim = function(canvasId, options) {
 
   var xRatio = 0.95; // 0.99999;// 0.2 + (0.95 - 0.2) * 0.5 * (1. + Math.cbrt(Math.random() * 2. - 1.)); //  0.2 + Math.random() * (0.95 - 0.2);
 
+  var xxx = getParameterByName('x');
+  if (xxx) {
+    xRatio = 1. * xxx;
+  }
+
+
   options.initCFn = options.initCFn || [
     'step('+xRatio+', random(vec2(x, y)))',
     'step('+xRatio+', random(vec2(x, y)))',
