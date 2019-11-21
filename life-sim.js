@@ -4,6 +4,13 @@
 window.LifeSim = function(canvasId, options) {
   options = options || {};
 
+
+  function getParameterByName(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+  }
+
+
   var dpi = window.devicePixelRatio || 1;
 
   var SW = document.documentElement.clientWidth || window.innerWidth;
@@ -13,6 +20,8 @@ window.LifeSim = function(canvasId, options) {
     '0.0',
     '0.0'
   ];
+
+  var qMode = getParameterByName('q');
 
   var xRatio = 0.95; // 0.99999;// 0.2 + (0.95 - 0.2) * 0.5 * (1. + Math.cbrt(Math.random() * 2. - 1.)); //  0.2 + Math.random() * (0.95 - 0.2);
 
@@ -47,13 +56,8 @@ window.LifeSim = function(canvasId, options) {
   canvas.style.transformOrigin = '0 0';
   canvas.style.transform = 'scale('+(1./dpi)+','+(1./dpi)+')';
 
-  var myScale = 2;
+  var myScale = qMode ? 1 : 2;
 
-
-  function getParameterByName(name) {
-    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-  }
 
   var zoom = getParameterByName('z');
   if (zoom) {
@@ -592,7 +596,7 @@ window.LifeSim = function(canvasId, options) {
     speed = 1. * sss;
   }
 
-  if (!getParameterByName('q')) {
+  if (!qMode) {
     // paused = true;
     clear();
 
