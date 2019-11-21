@@ -554,17 +554,29 @@ window.LifeSim = function(canvasId, options) {
   // paused = true
   clear();
 
-  var J0 = 55;
-  var J1 = 55;
+  var J0 = 125;
+  var J1 = 125;
 
-  for (var j = J0 ; j <= J1; j += 2) {
-    fillI(j, 0.5, (j - J0 + 1) / (J1 - J0 + 2), 1);
-    fill_(j, 0.5, (j - J0 + 1) / (J1 - J0 + 2), 1);
+  var adj = 1;
+
+  function getParameterByName(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+  }
+
+  var number = getParameterByName('n');
+  if (number) {
+    J0 = number;
+    J1 = number;
+    adj = 1;
   }
 
   for (var j = J0 ; j <= J1; j += 2) {
-    fillI(3, 0.5, (j - J0 + 1) / (J1 - J0 + 2), -1);
-    fill_(3, 0.5, (j - J0 + 1) / (J1 - J0 + 2), -1);
+    fillI(j, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, 1);
+    fill_(j, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, 1);
+
+    fillI(3, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, -1);
+    fill_(3, 0.5, ((j - J0 + 1) / (J1 - J0 + 2) - 0.5) / adj + 0.5, -1);
   }
 
   gl.animate();
