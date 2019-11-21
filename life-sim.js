@@ -551,7 +551,7 @@ window.LifeSim = function(canvasId, options) {
     ev.preventDefault();
   });
 
-  paused = true
+  // paused = true
   clear();
 
   var J0 = 55;
