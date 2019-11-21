@@ -43,7 +43,7 @@ window.LifeSim = function(canvasId, options) {
 
   var myScale = 1;
 
-  var speed = 16;
+  var speed = 1;
 
   var gl = GL.create(canvas, {antialias: false});
   gl.canvas.width = underW;
