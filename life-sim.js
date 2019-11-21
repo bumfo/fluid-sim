@@ -43,13 +43,25 @@ window.LifeSim = function(canvasId, options) {
 
   var myScale = 1;
 
+
+  function getParameterByName(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+  }
+
+  var zoom = getParameterByName('z');
+  if (zoom) {
+    myScale = zoom;
+  }
+
+
   // var speed = 1;
   var speed = 15 / 60;
 
   var gl = GL.create(canvas, {antialias: false});
   gl.canvas.width = underW;
   gl.canvas.height = underH;
-  gl.viewport(0, -gl.canvas.height * (myScale - 1), gl.canvas.width * myScale, gl.canvas.height * myScale);
+  gl.viewport(-gl.canvas.width * (myScale - 1) / 2, -gl.canvas.height * (myScale - 1) / 2, gl.canvas.width * myScale, gl.canvas.height * myScale);
 
   // Standard 2-triangle mesh covering the viewport
   // when draw with gl.TRIANGLE_STRIP
@@ -403,17 +415,17 @@ window.LifeSim = function(canvasId, options) {
     ++count;
   }
 
-  gl.ontouchmove = function(ev) {
-    textures.color1.drawTo(function() {
-      addNoisySplat(
-        textures.color0,
-        [1, 0, 0, 0.0],
-        [ev.offsetX / underW, 1.0 - ev.offsetY / underH],
-        4000
-      );
-    });
-    textures.swap('color0', 'color1');
-  }
+  // gl.ontouchmove = function(ev) {
+  //   textures.color1.drawTo(function() {
+  //     addNoisySplat(
+  //       textures.color0,
+  //       [1, 0, 0, 0.0],
+  //       [ev.offsetX / underW, 1.0 - ev.offsetY / underH],
+  //       4000
+  //     );
+  //   });
+  //   textures.swap('color0', 'color1');
+  // }
 
   var gb = 1.;
   var vel = 1.;
@@ -444,6 +456,8 @@ window.LifeSim = function(canvasId, options) {
   }
 
   gl.onmousedown = function(ev) {
+    if (myScale !== 1) return;
+
     lx = ev.offsetX;
     ly = ev.offsetY;
     vel = 1;
@@ -455,6 +469,8 @@ window.LifeSim = function(canvasId, options) {
   };
 
   gl.onmousemove = function(ev) {
+    if (myScale !== 1) return;
+
     if (ev.dragging) {
       if ((ev.buttons & 1) !== 0) {
         dragging = ev;
@@ -571,11 +587,6 @@ window.LifeSim = function(canvasId, options) {
   var J1 = 55;
 
   var adj = 1;
-
-  function getParameterByName(name) {
-    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-  }
 
   var number = getParameterByName('n');
   if (number) {
