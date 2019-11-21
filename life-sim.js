@@ -41,7 +41,7 @@ window.LifeSim = function(canvasId, options) {
   canvas.style.transformOrigin = '0 0';
   canvas.style.transform = 'scale('+(1./dpi)+','+(1./dpi)+')';
 
-  var myScale = 1;
+  var myScale = 2;
 
 
   function getParameterByName(name) {
