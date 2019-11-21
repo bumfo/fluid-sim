@@ -484,15 +484,28 @@ window.LifeSim = function(canvasId, options) {
     textures.color0.drawTo(clearPainter);
   }
 
-  function fillI() {
-    var l = Math.min(underH - 2, 1000);
+  var L0 = Math.min(HEIGHT - 2, 1000);
 
+  function fillI(l, b, c, d) {
     for (var i = 0; i < l; ++i) {
       textures.color1.drawTo(function() {
         addPixel(
           textures.color0,
-          [1, 0, 0, 0],
-          [.5, 1.0 - ((Math.floor((underH - l) / 2) + i + 0.5) / underH)]
+          [d, 0, 0, 0],
+          [Math.floor(b * WIDTH + 0.5) / WIDTH, 1.0 - ((Math.floor((HEIGHT - l) / 2) + i + 0.5) / HEIGHT + c - 0.5)]
+        );
+      });
+      textures.swap('color0', 'color1');
+    }
+  }
+
+  function fill_(l, b, c, d) {
+    for (var i = 0; i < l; ++i) {
+      textures.color1.drawTo(function() {
+        addPixel(
+          textures.color0,
+          [d, 0, 0, 0],
+          [(Math.floor((WIDTH - l) / 2) + i + 1.5) / WIDTH + b - 0.5, 1.0 - Math.floor(c * HEIGHT + 0.5) / HEIGHT]
         );
       });
       textures.swap('color0', 'color1');
@@ -519,7 +532,14 @@ window.LifeSim = function(canvasId, options) {
         textures.swap('phantom0', 'phantom1');
       }
     } else if (ev.keyCode === 73) {
-      fillI();
+      fillI(L0, 0.5, 0.5, 1);
+    } else if (ev.key === 'f') {
+      speed *= 2;
+      if (speed > 16) speed = 16;
+      // alert(ev.key);
+    } else if (ev.key === 's') {
+      speed /= 2;
+      if (speed < 1) speed = 1;
     }
   });
 
@@ -530,6 +550,22 @@ window.LifeSim = function(canvasId, options) {
   gl.canvas.addEventListener('contextmenu', function(ev) {
     ev.preventDefault();
   });
+
+  paused = true
+  clear();
+
+  var J0 = 55;
+  var J1 = 55;
+
+  for (var j = J0 ; j <= J1; j += 2) {
+    fillI(j, 0.5, (j - J0 + 1) / (J1 - J0 + 2), 1);
+    fill_(j, 0.5, (j - J0 + 1) / (J1 - J0 + 2), 1);
+  }
+
+  for (var j = J0 ; j <= J1; j += 2) {
+    fillI(3, 0.5, (j - J0 + 1) / (J1 - J0 + 2), -1);
+    fill_(3, 0.5, (j - J0 + 1) / (J1 - J0 + 2), -1);
+  }
 
   gl.animate();
 };
